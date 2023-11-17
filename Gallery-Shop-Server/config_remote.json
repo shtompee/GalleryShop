@@ -1,10 +1,10 @@
 {
   "dbConfig": {
-    "host": "localhost",
-    "port": 3306,
+    "host": "dpg-clbkso7t6quc739h16r0-a",
+    "port": 5432,
     "appListen":3000,
     "user": "root",
-    "password": "root",
+    "password": "2zptsswkjBFj0MfVGsxQrV7D74nBGD2v",
     "database": "libraryshop"
   },
   "smtpConfig": {
