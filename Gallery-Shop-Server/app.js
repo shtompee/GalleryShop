@@ -8,7 +8,7 @@ import fs from "fs";
 import cors from "cors";
 import nodemailer from "nodemailer";
 import SibApiV3Sdk from "sib-api-v3-sdk";
-import config from "./config.json" assert { type: "json" };
+import config from "./config_remote.json" assert { type: "json" };
 
 const app = express();
 app.use(cors());
