@@ -1,11 +1,11 @@
 {
   "dbConfig": {
-    "host": "dpg-clbkso7t6quc739h16r0-a",
+    "host": "dpg-clbkso7t6quc739h16r0-a.frankfurt-postgres.render.com",
     "port": 5432,
-    "appListen":3000,
     "user": "root",
     "password": "2zptsswkjBFj0MfVGsxQrV7D74nBGD2v",
-    "database": "libraryshop"
+    "database": "libraryshop",
+    "ssl": true
   },
   "smtpConfig": {
     "host": "smtp.gmail.com",

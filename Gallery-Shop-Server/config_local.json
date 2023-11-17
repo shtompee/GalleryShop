@@ -1,11 +1,11 @@
 {
   "dbConfig": {
     "host": "localhost",
-    "port": 3306,
-    "appListen":3000,
-    "user": "root",
-    "password": "root",
-    "database": "libraryshop"
+    "port": 5432,
+    "user": "postgres",
+    "password": "a5187815am",
+    "database": "postgres",
+    "ssl": false
   },
   "smtpConfig": {
     "host": "smtp.gmail.com",

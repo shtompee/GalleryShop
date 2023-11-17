@@ -2,14 +2,14 @@ import express from "express";
 import bodyParser from "body-parser";
 import multer from "multer";
 import path from "path";
-import mysql from "mysql";
+import pkg from "pg";
 import sharp from "sharp";
 import fs from "fs";
 import cors from "cors";
 import nodemailer from "nodemailer";
-import SibApiV3Sdk from "sib-api-v3-sdk";
 import config from "./config_remote.json" assert { type: "json" };
 
+const { Pool } = pkg;
 const app = express();
 app.use(cors());
 
@@ -22,12 +22,13 @@ const dbConfig = {
   port: config.dbConfig.port,
   user: config.dbConfig.user,
   password: config.dbConfig.password,
-  database: config.dbConfig.database, // Replace with your actual database name
+  database: config.dbConfig.database,
+  ssl: config.dbConfig.ssl,
 };
 
 const __dirname = path.resolve();
 
-const pool = mysql.createPool(dbConfig);
+const pool = new Pool(dbConfig);
 
 const truePassword = config.truePassword;
 
@@ -37,7 +38,7 @@ app.use(
     extended: true,
   })
 );
-console.log(__dirname);
+//console.log(__dirname);
 
 app.use(express.static(path.join(__dirname, "angular-app-folder")));
 
@@ -60,21 +61,21 @@ function getPaginatedData(page, itemsPerPage) {
   const offset = Number((page - 1) * itemsPerPage);
 
   return new Promise((resolve, reject) => {
-    const query = `SELECT id,  CONCAT('data:image/jpeg;base64,', TO_BASE64(list_image))  as list_image, name, prod_year, techlogy, paint_size, price, is_purchased FROM painting ORDER BY id ASC LIMIT ? OFFSET ?`;
+    const query = `SELECT id, concat('data:image/jpeg;base64,', translate(encode(list_image, 'base64'), E'\n', '')) as list_image, name, prod_year, techlogy, paint_size, price, is_purchased FROM painting ORDER BY id ASC LIMIT $1 OFFSET $2`;
 
-    pool.getConnection((error, connection) => {
+    pool.connect((error, connection, release) => {
       if (error) {
         reject(error);
         return;
       }
 
       connection.query(query, [limit, offset], (error, results) => {
-        connection.release(); // Важно освободить соединение после выполнения запроса
+        release(); // Важно освободить соединение после выполнения запроса
 
         if (error) {
           reject(error);
         } else {
-          resolve(results);
+          resolve(results.rows);
         }
       });
     });
@@ -85,19 +86,19 @@ function getPaginatedCount() {
   return new Promise((resolve, reject) => {
     const query = `SELECT COUNT(*) AS total FROM painting`;
 
-    pool.getConnection((error, connection) => {
+    pool.connect((error, connection, release) => {
       if (error) {
         reject(error);
         return;
       }
 
       connection.query(query, (error, results) => {
-        connection.release(); // Важно освободить соединение после выполнения запроса
+        release(); // Важно освободить соединение после выполнения запроса
 
         if (error) {
           reject(error);
         } else {
-          resolve(results);
+          resolve(results.rows);
         }
       });
     });
@@ -151,21 +152,21 @@ app.get("/products/productDetail/:id", async (req, res) => {
 
 function getProductDetail(id) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT id, CONCAT('data:image/jpeg;base64,', TO_BASE64(full_image)) as list_image, name, prod_year, techlogy, paint_size, price, is_purchased FROM painting WHERE id = ?`;
+    const query = `SELECT id, concat('data:image/jpeg;base64,', translate(encode(full_image, 'base64'), E'\n', '')) as list_image, name, prod_year, techlogy, paint_size, price, is_purchased FROM painting WHERE id = $1`;
 
-    pool.getConnection((error, connection) => {
+    pool.connect((error, connection, release) => {
       if (error) {
         reject(error);
         return;
       }
 
       connection.query(query, [Number(id)], (error, results) => {
-        connection.release(); // Важно освободить соединение после выполнения запроса
+        release(); // Важно освободить соединение после выполнения запроса
 
         if (error) {
           reject(error);
         } else {
-          resolve(results);
+          resolve(results.rows);
         }
       });
     });
@@ -196,16 +197,16 @@ app.get("/products/productImage/:id", async (req, res) => {
 
 function getProductImage(id) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT list_image FROM painting WHERE id = ?`;
+    const query = `SELECT list_image FROM painting WHERE id = $1`;
 
-    pool.getConnection((error, connection) => {
+    pool.connect((error, connection, release) => {
       if (error) {
         reject(error);
         return;
       }
 
       connection.query(query, [Number(id)], (error, results) => {
-        connection.release(); // Важно освободить соединение после выполнения запроса
+        release(); // Важно освободить соединение после выполнения запроса
 
         if (error) {
           reject(error);
@@ -220,16 +221,16 @@ function getProductImage(id) {
 function removeProducts(id, password) {
   if (password === truePassword) {
     return new Promise((resolve, reject) => {
-      const query = `DELETE FROM painting WHERE id = ?`;
+      const query = `DELETE FROM painting WHERE id = $1`;
 
-      pool.getConnection((error, connection) => {
+      pool.connect((error, connection, release) => {
         if (error) {
           reject(error);
           return;
         }
 
         connection.query(query, [Number(id)], (error, results) => {
-          connection.release();
+          release();
 
           if (error) {
             reject(error);
@@ -282,7 +283,7 @@ app.put("/products/edit/:id", function (req, res) {
 
   if (password === truePassword) {
     try {
-      const updateQuery = `UPDATE painting SET name=?, prod_year=?, price=?, paint_size=?, techlogy=?,is_purchased=? WHERE id=?`;
+      const updateQuery = `UPDATE painting SET name=$1, prod_year=$2, price=$3, paint_size=$4, techlogy=$5,is_purchased=$6 WHERE id=$7`;
 
       const values = [
         req.body["name"],
@@ -301,7 +302,7 @@ app.put("/products/edit/:id", function (req, res) {
         "Origin, X-Requested-With, Content-Type, Accept"
       );
 
-      pool.getConnection((error, connection) => {
+      pool.connect((error, connection, release) => {
         if (error) {
           console.error(
             "Произошла ошибка при подключении к базе данных:",
@@ -310,7 +311,7 @@ app.put("/products/edit/:id", function (req, res) {
           res.status(400).json({ error: "Произошла ошибка на сервере" });
         } else {
           connection.query(updateQuery, values, (error, results) => {
-            connection.release();
+            release();
             if (error) {
               console.error("Произошла ошибка при выполнении запроса:", error);
               res.status(400).json({ error: "Произошла ошибка на сервере" });
@@ -350,7 +351,7 @@ const transporter = nodemailer.createTransport({
 app.post("/products/send-email", (req, res) => {
   const { itemsPrice, itemsName, itemsIds, email, name, message, phone } =
     req.body;
-  console.log(req.body);
+  //console.log(req.body);
   const attachments = [];
 
   itemsIds.forEach((itemId, index) => {
@@ -446,7 +447,7 @@ app.post("/products/send-email", (req, res) => {
       console.error("Ошибка отправки письма:", error);
       res.status(500).json({ error: "Ошибка отправки письма" });
     } else {
-      console.log("Письмо успешно отправлено:", info.response);
+      //console.log("Письмо успешно отправлено:", info.response);
       res.json({ message: "Письмо успешно отправлено" });
     }
   });
@@ -493,7 +494,7 @@ app.post("/products/upload", upload.single("image"), (req, res) => {
   }
 
   // Generate thumbnail (list) image
-
+  let uploadedPath = `uploads/${image.filename}`;
   let listPath = `uploads/${image.filename}-thumbnail.jpg`;
   sharp(image.path)
     .resize(200, 200, {
@@ -533,24 +534,23 @@ app.post("/products/upload", upload.single("image"), (req, res) => {
           paint_size,
           sale_status,
           techlogy,
-          fs.readFileSync(listPath),
-          fs.readFileSync(originalPath),
+          Buffer.from(fs.readFileSync(listPath)),
+          Buffer.from(fs.readFileSync(originalPath)),
           new Date(),
         ];
 
         // Insert data into MySQL database
-        pool.getConnection((err, connection) => {
-          if (err) {
-            console.error("Error connecting to the database:", err);
-
+        pool.connect((error, connection, release) => {
+          if (error) {
+            console.error("Error connecting to the database:", error);
             return;
           }
 
           const insertQuery =
-            "INSERT INTO painting (name, prod_year, price, paint_size, sale_status, techlogy, list_image, full_image, prod_date) VALUES (?,?,?,?,?,?,?,?,?)";
+            "INSERT INTO painting (id, name, prod_year, price, paint_size, sale_status, techlogy, list_image, full_image, prod_date) VALUES (nextval('id_seq'), $1,$2,$3,$4,$5,$6,$7,$8,$9)";
 
           connection.query(insertQuery, queryValues, (error, results) => {
-            connection.release(); // Release the connection back to the pool
+            release(); // Release the connection back to the pool
 
             if (error) {
               console.error("Error executing the SQL query:", error);
@@ -558,13 +558,24 @@ app.post("/products/upload", upload.single("image"), (req, res) => {
               return;
             }
 
+            fs.unlink(listPath, (err) => {
+              if (err) throw err;
+              //console.log("File list deleted");
+            });
+
+            fs.unlink(originalPath, (err) => {
+              if (err) throw err;
+              //console.log("File original deleted");
+            });
+
+            fs.unlink(uploadedPath, (err) => {
+              if (err) throw err;
+              //console.log("File uploaded deleted");
+            });
+
             res.send("Form submitted and data inserted into the database.");
           });
         });
       }
     });
 });
-
-// app.listen(config.dbConfig.appListen, () => {
-//   console.log("Server is listening on port 3000");
-// });
