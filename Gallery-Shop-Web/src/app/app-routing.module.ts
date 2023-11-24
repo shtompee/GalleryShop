@@ -5,7 +5,7 @@ import { ProductsComponent } from './components/products/products.component';
 import { ProductsDetailsComponent } from './components/products-details/products-details.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { BasketComponent } from './components/basket/basket.component';
-import { EdditComponent } from './eddit/eddit.component';
+import { EditComponent } from './edit/edit.component';
 import { AddNewProductComponent } from './components/add-new-product/add-new-product.component';
 import { EmailFormComponent } from './email-form/email-form.component';
 
@@ -16,7 +16,7 @@ const routes: Routes = [
   { path: 'productDetail/:id', component: ProductsDetailsComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'basket', component: BasketComponent },
-  { path: 'eddit', component: EdditComponent },
+  { path: 'edit', component: EditComponent },
   { path: 'addNewProduct', component: AddNewProductComponent },
   { path: 'emailForm', component: EmailFormComponent },
   { path: '**', redirectTo: '' },

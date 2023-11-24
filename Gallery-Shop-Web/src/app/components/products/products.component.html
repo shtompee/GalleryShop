@@ -52,7 +52,7 @@
         <button
           class="buttons"
           (click)="setEditItem(products.id)"
-          [routerLink]="['/eddit']"
+          [routerLink]="['/edit']"
           mat-raised-button
         >
           Edit
@@ -71,7 +71,7 @@
   </mat-card>
 </div>
 <div *ngIf="showButton">
-  <button [routerLink]="['/addNewProduct']" class="buttons" mat-raised-button>
+  <button (click)="addNewProduct()" class="buttons" mat-raised-button>
     Add New Product
   </button>
 </div>

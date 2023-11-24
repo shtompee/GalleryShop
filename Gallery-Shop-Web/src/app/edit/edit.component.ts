@@ -17,11 +17,11 @@ import {
 import { Location } from '@angular/common';
 
 @Component({
-  selector: 'app-eddit',
-  templateUrl: './eddit.component.html',
-  styleUrls: ['./eddit.component.scss'],
+  selector: 'app-edit',
+  templateUrl: './edit.component.html',
+  styleUrls: ['./edit.component.scss'],
 })
-export class EdditComponent {
+export class EditComponent {
   productDetail: any;
   profileForm: any = new FormGroup({
     name: new FormControl('', [
@@ -104,18 +104,20 @@ export class EdditComponent {
       this.profileForm.get('isProductPurchased').value;
 
     const result: SweetAlertResult<any> = await Swal.fire({
-      title: 'Enter your password',
+      title: 'Введите пароль для подтверждения',
       input: 'password',
-      inputLabel: 'Password',
-      inputPlaceholder: 'Enter your password',
-      inputAttributes: {
-        maxlength: '10', // Обратите внимание на изменение типа здесь
-        autocapitalize: 'off',
-        autocorrect: 'off',
-      },
       showCancelButton: true,
-      cancelButtonText: 'Cancel',
-      confirmButtonText: 'Submit',
+      confirmButtonText: 'Подтвердить',
+      cancelButtonText: 'Отмена',
+      inputValidator: (value) => {
+        // Проверить, что введенный пароль правильный
+        if (!value) {
+          return 'Password cannot be empty';
+        } else if (value !== '1234') {
+          return 'Incorrect password';
+        }
+        return null;
+      },
     });
 
     if (result.dismiss === Swal.DismissReason.cancel) {

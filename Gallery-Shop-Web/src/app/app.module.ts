@@ -20,7 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ProductService } from './services/product.service';
-import { EdditComponent } from './eddit/eddit.component';
+import { EditComponent } from './edit/edit.component';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AddNewProductComponent } from './components/add-new-product/add-new-product.component';
@@ -39,7 +39,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     MainComponent,
     BasketComponent,
     ContactComponent,
-    EdditComponent,
+    EditComponent,
     AddNewProductComponent,
     EmailFormComponent,
   ],

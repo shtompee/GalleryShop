@@ -115,7 +115,27 @@
     formControlName="paint_size"
   /><br />
 
-  <span class="error-message" id="sizeError"></span>
+  <!--.............................Validation.........................................-->
+  <div
+    *ngIf="
+      profileForm.get('paint_size').hasError('required') &&
+      profileForm.get('paint_size').touched
+    "
+    style="color: brown"
+  >
+    поле обязательно для заполнения.
+  </div>
+
+  <div
+    *ngIf="
+      profileForm.get('paint_size').hasError('pattern') &&
+      profileForm.get('paint_size').touched
+    "
+    style="color: brown"
+  >
+    неверный формат.
+  </div>
+  <!--................................................................................-->
 
   <div><label class="contact-label" for="">techlogy</label></div>
   <input

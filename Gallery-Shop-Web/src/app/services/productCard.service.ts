@@ -21,12 +21,14 @@ export class productCard {
     if (existingItem) {
       Swal.fire('Товар уже есть в карзине');
     } else {
-      const cartItemsJson = localStorage.getItem(this.storageKey);
+      let cartItemsJson = localStorage.getItem(this.storageKey);
       let cartItems: Product[] = [];
-
+      if (cartItemsJson == null) {
+        localStorage.setItem(this.storageKey, JSON.stringify(cartItems));
+        cartItemsJson = localStorage.getItem(this.storageKey);
+      }
       if (cartItemsJson) {
         cartItems = JSON.parse(cartItemsJson);
-
         const itemCount = cartItems.length;
         if (itemCount >= 5) {
           Swal.fire('Максимальное количество товара в корзине');
@@ -62,7 +64,6 @@ export class productCard {
   }
 
   getItems() {
-    console.log(this.items);
     return this.items;
   }
 

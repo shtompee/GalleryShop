@@ -32,7 +32,7 @@ export class AddNewProductComponent {
     ]),
     paint_size: new FormControl('', [
       Validators.required,
-      this.customPaintSizeValidator,
+      Validators.pattern(/^[0-9]+x[0-9]+$/),
     ]),
     techlogy: new FormControl('', Validators.required),
     image: new FormControl(''),
@@ -72,30 +72,49 @@ export class AddNewProductComponent {
   }
 
   onSubmit() {
-    if (this.profileForm.valid && this.selectedImage) {
-      const formData = new FormData();
-      formData.append('name', this.profileForm.value.name);
-      formData.append('prod_year', this.profileForm.value.prod_year);
-      formData.append('price', this.profileForm.value.price);
-      formData.append('paint_size', this.profileForm.value.paint_size);
-      formData.append('techlogy', this.profileForm.value.techlogy);
-      formData.append('image', this.selectedImage);
-
-      this.productService.uploadProduct(formData).subscribe(
-        (response) => {
-          Swal.fire('Товар успешно добавлен');
-          this.router.navigate(['/']);
-          this.profileForm.reset();
-        },
-        (error) => {
-          console.error(
-            'Произошла ошибка при добавлении товара:',
-            error.message
-          );
+    // Показать диалоговое окно для ввода пароля
+    Swal.fire({
+      title: 'Введите пароль для подтверждения',
+      input: 'password',
+      showCancelButton: true,
+      confirmButtonText: 'Подтвердить',
+      cancelButtonText: 'Отмена',
+      inputValidator: (value) => {
+        // Проверить, что введенный пароль правильный
+        if (!value) {
+          return 'Password cannot be empty';
+        } else if (value !== '1234') {
+          return 'Incorrect password';
         }
-      );
-    } else {
-      console.error('Форма невалидна или изображение не выбрано.');
-    }
+        return null;
+      },
+    }).then((result) => {
+      // Если пароль правильный и форма валидна
+      if (result.isConfirmed && this.profileForm.valid && this.selectedImage) {
+        const formData = new FormData();
+        formData.append('name', this.profileForm.value.name);
+        formData.append('prod_year', this.profileForm.value.prod_year);
+        formData.append('price', this.profileForm.value.price);
+        formData.append('paint_size', this.profileForm.value.paint_size);
+        formData.append('techlogy', this.profileForm.value.techlogy);
+        formData.append('image', this.selectedImage);
+
+        this.productService.uploadProduct(formData).subscribe(
+          (response) => {
+            Swal.fire('Товар успешно добавлен');
+            this.router.navigate(['/']);
+            this.profileForm.reset();
+          },
+          (error) => {
+            console.error(
+              'Произошла ошибка при добавлении товара:',
+              error.message
+            );
+          }
+        );
+      } else {
+        console.error('Форма невалидна или изображение не выбрано.');
+      }
+    });
   }
 }

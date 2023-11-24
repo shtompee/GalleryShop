@@ -35,7 +35,7 @@
     "
     style="color: brown"
   >
-    название картины должно содержать только буквы
+    Название картины должно содержать только буквы
   </div>
   <!--.................................................................................-->
 
@@ -116,6 +116,16 @@
     formControlName="paint_size"
   /><br />
 
+  <div
+    *ngIf="
+      profileForm.get('paint_size').hasError('required') &&
+      profileForm.get('paint_size').touched
+    "
+    style="color: brown"
+  >
+    Поле обязательно для заполнения.
+  </div>
+
   <div><label class="contact-label" for="">techlogy</label></div>
   <input
     formControlName="techlogy"
@@ -133,11 +143,11 @@
     "
     style="color: brown"
   >
-    поле обязательно для заполнения.
+    Поле обязательно для заполнения.
   </div>
   <!--................................................................................-->
 
-  <div>
+  <div style="display: flex; flex-direction: column; align-items: center">
     <label class="contact-label" for="">Картина проданна</label>
     <input
       formControlName="isProductPurchased"
@@ -146,8 +156,5 @@
     />
   </div>
 
-  <button [disabled]="profileForm.invalid" type="submit">Edit</button>
-  <div *ngIf="profileForm.invalid" style="color: brown">
-    заполните все поля правеьно
-  </div>
+  <button [disabled]="profileForm.invalid" type="submit">Сохранить</button>
 </form>

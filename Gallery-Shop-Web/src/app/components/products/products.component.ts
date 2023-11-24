@@ -49,8 +49,6 @@ export class ProductsComponent implements OnInit {
     this.ProductService.saveScrollPosition(currentUrl, scrollY);
   }
 
-  console() {}
-
   onPageChanged() {
     // Обновляем URL с новым значением "page"
     // console.log(this.router.navigate([this.page]));
@@ -115,32 +113,30 @@ export class ProductsComponent implements OnInit {
   }
 
   addToCart(product: Product) {
-    const currentPageUrl = this.router.url; // Получаем текущий URL страницы
-    localStorage.setItem(`productUrl_${product.id}`, currentPageUrl);
-    // Сохраните состояние корзины в Local Storage
-
     this.cartService.addToCart(product);
     const cartItems = this.cartService.getItems();
-
-    console.log(cartItems);
+    // Сохраните состояние корзины в Local Storage
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    localStorage.setItem(`productUrl_${product.id}`, this.router.url);
     this.cdr.detectChanges();
   }
 
   removeItem(Itemid: any) {
     Swal.fire({
-      title: 'Enter your password',
+      title: 'Введите пароль для подтверждения',
       input: 'password',
-      inputLabel: 'Password',
-      inputPlaceholder: 'Enter your password',
-      inputAttributes: {
-        maxlength: '10',
-        autocapitalize: 'off',
-        autocorrect: 'off',
-      },
       showCancelButton: true,
-      cancelButtonText: 'Cancel',
-      confirmButtonText: 'Submit',
+      confirmButtonText: 'Подтвердить',
+      cancelButtonText: 'Отмена',
+      inputValidator: (value) => {
+        // Проверить, что введенный пароль правильный
+        if (!value) {
+          return 'Password cannot be empty';
+        } else if (value !== '1234') {
+          return 'Incorrect password';
+        }
+        return null;
+      },
     }).then((result: SweetAlertResult<any>) => {
       if (result.dismiss === Swal.DismissReason.cancel) {
         // Действие отменено пользователем
@@ -213,4 +209,8 @@ export class ProductsComponent implements OnInit {
   // this.router.navigate(['/products', this.page], {
   //   queryParams: { page: this.page, itemsPerPage: this.itemsPerPage },
   // });
+
+  addNewProduct() {
+    this.router.navigate(['/addNewProduct']);
+  }
 }

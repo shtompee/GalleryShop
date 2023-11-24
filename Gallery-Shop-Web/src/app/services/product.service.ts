@@ -28,7 +28,9 @@ export class ProductService {
     });
   }
 
-  public url = 'http://localhost:3000/products';
+  // TODO:put to config
+  //public url = 'http://localhost:4000/products';
+  public url = 'https://nodejs-rest-api-example.onrender.com/products';
   public getProducts(
     page: number,
     itemsPerPage: number
